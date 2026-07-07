@@ -8,18 +8,26 @@
 <meta name="description" content="Ein KI-Agent, der Immobilien findet, analysiert und eine klare Kaufentscheidung mit Begründung liefert.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:        #FFFEF2;
-    --bg-alt:    #F5F3E7;
-    --ink:       #252420;
-    --muted:     #6E6A5E;
-    --line:      #DCD8C8;
-    --olive:     #3F5741; /* "Kaufen" accent */
-    --rust:      #9C4A38; /* "Nicht kaufen" accent */
-    --serif:     "Fraunces", Georgia, "Times New Roman", serif;
-    --sans:      "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --bg:        #FFFFFF;
+    --bg-soft:   #F6F8FA;
+    --ink:       #0F1B2D;
+    --muted:     #5B6472;
+    --line:      #E6E9EE;
+    --accent:    #0E9F6E; /* "Kaufen" green */
+    --accent-dk: #0B7D57;
+    --accent-soft:#E6F6EF;
+    --neg:       #E5484D; /* "Nicht kaufen" red */
+    --neg-soft:  #FDECEC;
+    --hero-bg:   #0C1220;
+    --hero-muted:#93A1B5;
+    --hero-line: rgba(255,255,255,.1);
+    --radius:    14px;
+    --shadow:    0 1px 2px rgba(15,27,45,.05), 0 4px 16px rgba(15,27,45,.06);
+    --shadow-lg: 0 24px 48px -12px rgba(0,0,0,.45);
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -31,176 +39,187 @@
     line-height:1.65;
     -webkit-font-smoothing:antialiased;
   }
-  /* ---------- language toggle ---------- */
-  html[data-lang="de"] .en{display:none !important}
+  /* ---------- language toggle (German is default before JS runs) ---------- */
+  html:not([data-lang="en"]) .en{display:none !important}
   html[data-lang="en"] .de{display:none !important}
 
   .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  section{border-top:1px solid var(--line)}
 
-  h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-0.01em}
-  h1{font-size:clamp(2.4rem,5vw,3.9rem);line-height:1.08}
-  h2{font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.2}
-  h3{font-size:1.25rem;line-height:1.3}
+  h1,h2,h3{font-weight:700;letter-spacing:-0.025em}
+  h1{font-size:clamp(2.3rem,5vw,3.7rem);line-height:1.08;font-weight:800}
+  h2{font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.2}
+  h3{font-size:1.15rem;line-height:1.35}
   p{color:var(--muted)}
 
   .eyebrow{
-    font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;
-    color:var(--muted);margin-bottom:1.4rem;display:block;
+    display:inline-block;font-size:.75rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent);margin-bottom:1.1rem;
   }
   .btn{
-    display:inline-block;font-family:var(--sans);font-size:.85rem;
-    letter-spacing:.06em;text-transform:uppercase;text-decoration:none;
-    padding:1rem 2rem;border:1px solid var(--ink);cursor:pointer;
-    transition:background .25s,color .25s;
+    display:inline-block;font-size:.95rem;font-weight:600;text-decoration:none;
+    padding:.85rem 1.7rem;border-radius:10px;cursor:pointer;border:1px solid transparent;
+    transition:background .2s,color .2s,border-color .2s,transform .1s;
   }
-  .btn-solid{background:var(--ink);color:var(--bg)}
-  .btn-solid:hover{background:var(--olive);border-color:var(--olive)}
-  .btn-ghost{background:transparent;color:var(--ink)}
-  .btn-ghost:hover{background:var(--ink);color:var(--bg)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn-solid{background:var(--accent);color:#fff}
+  .btn-solid:hover{background:var(--accent-dk)}
+  .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+  .btn-ghost:hover{background:rgba(255,255,255,.1)}
 
-  /* ---------- nav ---------- */
+  /* ---------- hero (dark, includes nav) ---------- */
+  .hero{
+    background:var(--hero-bg);
+    background-image:radial-gradient(800px 400px at 80% -10%, rgba(14,159,110,.22), transparent 65%);
+    color:#fff;
+  }
   nav{
     display:flex;align-items:center;justify-content:space-between;
-    padding:1.4rem 0;
+    padding:1.3rem 0;border-bottom:1px solid var(--hero-line);
   }
-  .brand-name{
-    font-family:var(--serif);font-size:1.3rem;letter-spacing:-0.01em;
-    text-decoration:none;color:var(--ink);
-  }
-  .nav-links{display:flex;gap:2rem;align-items:center;list-style:none}
+  .brand-name{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em;text-decoration:none;color:#fff}
+  .nav-links{display:flex;gap:1.8rem;align-items:center;list-style:none}
   .nav-links a{
-    font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;
-    color:var(--muted);text-decoration:none;transition:color .2s;
+    font-size:.88rem;font-weight:500;color:var(--hero-muted);
+    text-decoration:none;transition:color .2s;
   }
-  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover{color:#fff}
   .lang-toggle{
-    font-family:var(--sans);font-size:.78rem;letter-spacing:.12em;
-    background:none;border:1px solid var(--line);color:var(--muted);
-    padding:.45rem .9rem;cursor:pointer;transition:all .2s;
+    font-family:var(--sans);font-size:.8rem;font-weight:600;
+    background:rgba(255,255,255,.08);border:1px solid var(--hero-line);color:#fff;
+    padding:.4rem .85rem;border-radius:999px;cursor:pointer;transition:background .2s;
   }
-  .lang-toggle:hover{border-color:var(--ink);color:var(--ink)}
+  .lang-toggle:hover{background:rgba(255,255,255,.18)}
   @media(max-width:760px){.nav-links li.hide-m{display:none}}
 
-  /* ---------- hero ---------- */
-  .hero{border-top:1px solid var(--line);padding:5.5rem 0 6rem}
   .hero-grid{
     display:grid;grid-template-columns:1.1fr .9fr;gap:4rem;align-items:center;
+    padding:5rem 0 5.5rem;
   }
-  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:3.5rem}}
-  .hero p.lede{font-size:1.08rem;max-width:34rem;margin:1.8rem 0 2.6rem}
-  .hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:3rem;padding:3.5rem 0 4rem}}
+  .hero .eyebrow{color:#3DD68C}
+  .hero p.lede{font-size:1.1rem;max-width:34rem;margin:1.5rem 0 2.4rem;color:var(--hero-muted)}
+  .hero-ctas{display:flex;gap:.9rem;flex-wrap:wrap}
 
   /* ---------- deal score card ---------- */
   .score-card{
-    border:1px solid var(--ink);background:var(--bg);
-    padding:2rem 2rem 1.6rem;max-width:26rem;margin-left:auto;
+    background:#fff;color:var(--ink);border-radius:var(--radius);
+    padding:1.8rem 1.8rem 1.4rem;max-width:26rem;margin-left:auto;
+    box-shadow:var(--shadow-lg);border:1px solid var(--line);
   }
   @media(max-width:900px){.score-card{margin-left:0}}
+  .light .score-card{box-shadow:var(--shadow)}
   .score-head{
-    display:flex;justify-content:space-between;align-items:baseline;
-    border-bottom:1px solid var(--line);padding-bottom:1.2rem;margin-bottom:1.2rem;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--line);padding-bottom:1rem;margin-bottom:.6rem;
   }
-  .verdict{display:flex;align-items:center;gap:.6rem;font-family:var(--serif);font-size:1.3rem}
-  .dot{width:.55rem;height:.55rem;border-radius:50%;display:inline-block}
-  .dot-buy{background:var(--olive)}
-  .dot-no{background:var(--rust)}
-  .score-num{font-family:var(--serif);font-size:2.2rem;color:var(--olive)}
-  .score-num small{font-size:1rem;color:var(--muted)}
+  .verdict{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-size:.95rem;font-weight:700;padding:.35rem .9rem;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent-dk);
+  }
+  .verdict.no{background:var(--neg-soft);color:var(--neg)}
+  .dot{width:.5rem;height:.5rem;border-radius:50%;display:inline-block}
+  .dot-buy{background:var(--accent)}
+  .dot-no{background:var(--neg)}
+  .score-num{font-size:2rem;font-weight:800;letter-spacing:-0.03em;color:var(--accent-dk);font-variant-numeric:tabular-nums}
+  .score-num small{font-size:.95rem;font-weight:600;color:var(--muted)}
+  .score-card.no .score-num{color:var(--neg)}
   .score-list{list-style:none}
   .score-list li{
     display:flex;justify-content:space-between;gap:1rem;
-    font-size:.86rem;padding:.5rem 0;border-bottom:1px solid var(--line);
-    color:var(--ink);
+    font-size:.87rem;padding:.55rem 0;border-bottom:1px solid var(--line);
   }
   .score-list li:last-child{border-bottom:none}
-  .score-list .val{color:var(--olive);white-space:nowrap}
-  .score-list .val.neg{color:var(--rust)}
-  .card-caption{
-    font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;
-    color:var(--muted);margin-top:1.1rem;
-  }
+  .score-list .val{color:var(--accent-dk);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .score-list .val.neg{color:var(--neg)}
+  .card-caption{font-size:.74rem;color:var(--muted);margin-top:.9rem}
 
-  /* ---------- statement ---------- */
-  .statement{padding:6rem 0;background:var(--bg-alt)}
-  .statement h2{max-width:46rem}
-  .statement p{max-width:40rem;margin-top:1.6rem}
+  /* ---------- sections ---------- */
+  section.light{padding:5rem 0}
+  section.light.alt{background:var(--bg-soft)}
+  .sec-head{max-width:44rem}
+  .sec-head p{margin-top:1rem}
 
   /* ---------- how it works ---------- */
-  .how{padding:5.5rem 0 6rem}
-  .steps{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
-    background:var(--line);border:1px solid var(--line);margin-top:3.5rem;
-  }
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:3rem}
   @media(max-width:820px){.steps{grid-template-columns:1fr}}
-  .step{background:var(--bg);padding:2.4rem 2rem 2.8rem}
-  .step-num{
-    font-family:var(--serif);font-size:.95rem;color:var(--muted);
-    display:block;margin-bottom:1.6rem;
+  .step{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:1.9rem 1.7rem 2.1rem;box-shadow:var(--shadow);
   }
-  .step h3{margin-bottom:.9rem}
+  .step-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:2.1rem;height:2.1rem;border-radius:50%;
+    background:var(--accent-soft);color:var(--accent-dk);
+    font-weight:700;font-size:.9rem;margin-bottom:1.2rem;
+  }
+  .step h3{margin-bottom:.7rem}
   .step p{font-size:.92rem}
 
   /* ---------- modules ---------- */
-  .modules{padding:5.5rem 0 6rem;background:var(--bg-alt)}
-  .mod-grid{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
-    background:var(--line);border:1px solid var(--line);margin-top:3.5rem;
-  }
+  .mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:3rem}
   @media(max-width:900px){.mod-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:620px){.mod-grid{grid-template-columns:1fr}}
-  .mod{background:var(--bg);padding:2.2rem 1.9rem 2.5rem}
-  .mod-num{
-    font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
-    color:var(--muted);display:block;margin-bottom:1.4rem;
+  .mod{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:1.8rem 1.6rem 1.9rem;box-shadow:var(--shadow);
+    transition:transform .15s,box-shadow .15s;
   }
-  .mod h3{margin-bottom:.8rem}
-  .mod p{font-size:.9rem;margin-bottom:1.1rem}
+  .mod:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,27,45,.1)}
+  .mod-num{
+    display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:1rem;
+  }
+  .mod h3{margin-bottom:.6rem}
+  .mod p{font-size:.9rem;margin-bottom:1rem}
   .tags{display:flex;flex-wrap:wrap;gap:.4rem}
   .tag{
-    font-size:.72rem;color:var(--muted);border:1px solid var(--line);
-    padding:.2rem .6rem;white-space:nowrap;
+    font-size:.74rem;font-weight:500;color:var(--muted);
+    background:var(--bg-soft);border:1px solid var(--line);
+    padding:.2rem .65rem;border-radius:999px;white-space:nowrap;
   }
 
   /* ---------- deal score feature ---------- */
-  .feature{padding:5.5rem 0 6rem}
-  .compare{
-    display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3.5rem;
-  }
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:3rem}
   @media(max-width:820px){.compare{grid-template-columns:1fr}}
   .compare .score-card{max-width:none;margin:0}
-  .score-card.no .score-head .score-num{color:var(--rust)}
 
   /* ---------- screenshot placeholder ---------- */
   .placeholder{
-    border:1px dashed var(--muted);display:flex;align-items:center;justify-content:center;
-    color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;
-    text-align:center;padding:1rem;
+    border:2px dashed var(--line);border-radius:var(--radius);background:var(--bg-soft);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-size:.8rem;font-weight:500;text-align:center;padding:1rem;
   }
-  .shot{margin-top:4rem;height:420px}
+  .shot{margin-top:3.5rem;height:420px}
   @media(max-width:820px){.shot{height:260px}}
 
-  /* ---------- waitlist ---------- */
-  .waitlist{padding:6rem 0;background:var(--ink);color:var(--bg);border-top:none}
-  .waitlist h2{color:var(--bg);max-width:36rem}
-  .waitlist p{color:#B9B5A6;max-width:34rem;margin-top:1.4rem}
-  .wl-form{display:flex;gap:.8rem;margin-top:2.6rem;max-width:34rem;flex-wrap:wrap}
-  .wl-form input{
-    flex:1;min-width:220px;background:transparent;border:1px solid #5b584d;
-    color:var(--bg);padding:1rem 1.2rem;font-size:.95rem;font-family:var(--sans);
+  /* ---------- waitlist (dark bookend) ---------- */
+  .waitlist{
+    background:var(--hero-bg);
+    background-image:radial-gradient(700px 350px at 15% 110%, rgba(14,159,110,.2), transparent 65%);
+    color:#fff;padding:5.5rem 0;
   }
-  .wl-form input::placeholder{color:#8d897b}
-  .wl-form input:focus{outline:none;border-color:var(--bg)}
-  .wl-form .btn{border-color:var(--bg);background:var(--bg);color:var(--ink)}
-  .wl-form .btn:hover{background:var(--olive);border-color:var(--olive);color:var(--bg)}
-  .wl-note{font-size:.78rem;color:#8d897b;margin-top:1.1rem}
+  .waitlist .eyebrow{color:#3DD68C}
+  .waitlist h2{max-width:36rem}
+  .waitlist p{color:var(--hero-muted);max-width:34rem;margin-top:1.2rem}
+  .wl-form{display:flex;gap:.8rem;margin-top:2.4rem;max-width:34rem;flex-wrap:wrap}
+  .wl-form input{
+    flex:1;min-width:220px;background:rgba(255,255,255,.06);
+    border:1px solid var(--hero-line);border-radius:10px;
+    color:#fff;padding:.85rem 1.1rem;font-size:.95rem;font-family:var(--sans);
+  }
+  .wl-form input::placeholder{color:#6b7789}
+  .wl-form input:focus{outline:none;border-color:var(--accent)}
+  .wl-note{font-size:.8rem;color:#6b7789;margin-top:1rem}
   .wl-success{
-    display:none;margin-top:2.6rem;border:1px solid var(--olive);
-    padding:1.2rem 1.5rem;color:var(--bg);font-size:.95rem;
+    display:none;margin-top:2.4rem;border:1px solid var(--accent);border-radius:10px;
+    background:rgba(14,159,110,.12);padding:1.1rem 1.4rem;font-size:.95rem;
   }
 
   /* ---------- footer ---------- */
-  footer{border-top:1px solid var(--line);padding:2.2rem 0;font-size:.78rem;color:var(--muted)}
+  footer{border-top:1px solid var(--line);padding:2rem 0;font-size:.82rem;color:var(--muted)}
   .foot{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
   .foot a{color:var(--muted);text-decoration:none;margin-left:1.4rem}
   .foot a:hover{color:var(--ink)}
@@ -208,20 +227,20 @@
 </head>
 <body>
 
-<header class="wrap">
-  <nav>
-    <a href="#" class="brand-name">Investment Scout</a>
-    <ul class="nav-links">
-      <li class="hide-m"><a href="#how"><span class="de">So funktioniert's</span><span class="en">How it works</span></a></li>
-      <li class="hide-m"><a href="#modules"><span class="de">Module</span><span class="en">Modules</span></a></li>
-      <li class="hide-m"><a href="#waitlist"><span class="de">Warteliste</span><span class="en">Waitlist</span></a></li>
-      <li><button class="lang-toggle" id="langToggle" aria-label="Sprache wechseln / switch language">EN</button></li>
-    </ul>
-  </nav>
-</header>
+<!-- ================= HERO (dark) ================= -->
+<div class="hero">
+  <header class="wrap">
+    <nav>
+      <a href="#" class="brand-name">Investment Scout</a>
+      <ul class="nav-links">
+        <li class="hide-m"><a href="#how"><span class="de">So funktioniert's</span><span class="en">How it works</span></a></li>
+        <li class="hide-m"><a href="#modules"><span class="de">Module</span><span class="en">Modules</span></a></li>
+        <li class="hide-m"><a href="#waitlist"><span class="de">Warteliste</span><span class="en">Waitlist</span></a></li>
+        <li><button class="lang-toggle" id="langToggle" aria-label="Sprache wechseln / switch language">EN</button></li>
+      </ul>
+    </nav>
+  </header>
 
-<!-- ================= HERO ================= -->
-<section class="hero">
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow"><span class="de">KI-Agent für Immobilien-Investments</span><span class="en">AI agent for real-estate investing</span></span>
@@ -257,11 +276,11 @@
       <div class="card-caption"><span class="de">Beispielanalyse · 3-Zimmer-ETW · automatisch erstellt</span><span class="en">Sample analysis · 3-room condo · generated automatically</span></div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- ================= STATEMENT ================= -->
-<section class="statement">
-  <div class="wrap">
+<section class="light">
+  <div class="wrap sec-head">
     <span class="eyebrow"><span class="de">Warum</span><span class="en">Why</span></span>
     <h2>
       <span class="de">Keine langen Exposés mehr. Eine klare Entscheidung mit Begründung.</span>
@@ -275,23 +294,25 @@
 </section>
 
 <!-- ================= HOW IT WORKS ================= -->
-<section class="how" id="how">
+<section class="light alt" id="how">
   <div class="wrap">
-    <span class="eyebrow"><span class="de">So funktioniert's</span><span class="en">How it works</span></span>
-    <h2><span class="de">Drei Schritte zur Entscheidung</span><span class="en">Three steps to a decision</span></h2>
+    <div class="sec-head">
+      <span class="eyebrow"><span class="de">So funktioniert's</span><span class="en">How it works</span></span>
+      <h2><span class="de">Drei Schritte zur Entscheidung</span><span class="en">Three steps to a decision</span></h2>
+    </div>
     <div class="steps">
       <div class="step">
-        <span class="step-num">01</span>
+        <span class="step-num">1</span>
         <h3><span class="de">Kriterien festlegen</span><span class="en">Set your criteria</span></h3>
         <p><span class="de">Eigenkapital, Zielrendite, Regionen, Risikoprofil, Steuersituation. Einmal einrichten — der Agent kennt ab jetzt deine Definition eines guten Deals.</span><span class="en">Equity, target yield, regions, risk profile, tax situation. Set it up once — from then on the agent knows your definition of a good deal.</span></p>
       </div>
       <div class="step">
-        <span class="step-num">02</span>
+        <span class="step-num">2</span>
         <h3><span class="de">Der Agent arbeitet</span><span class="en">The agent works</span></h3>
         <p><span class="de">Täglich durchsucht er den Markt, bewertet jeden Standort, rechnet Rendite, Cashflow, Steuer und Finanzierung durch und liest die Unterlagen.</span><span class="en">It scans the market daily, scores every location, runs yield, cash flow, tax and financing numbers, and reads the documents.</span></p>
       </div>
       <div class="step">
-        <span class="step-num">03</span>
+        <span class="step-num">3</span>
         <h3><span class="de">Entscheidung erhalten</span><span class="en">Receive the decision</span></h3>
         <p><span class="de">Kaufen oder nicht kaufen — mit Deal Score und nachvollziehbarer Begründung. Du prüfst nur noch die besten Objekte selbst.</span><span class="en">Buy or don't buy — with a deal score and a transparent rationale. You only review the best properties yourself.</span></p>
       </div>
@@ -300,10 +321,12 @@
 </section>
 
 <!-- ================= MODULES ================= -->
-<section class="modules" id="modules">
+<section class="light" id="modules">
   <div class="wrap">
-    <span class="eyebrow"><span class="de">Module</span><span class="en">Modules</span></span>
-    <h2><span class="de">Was der Agent für dich übernimmt</span><span class="en">What the agent takes off your plate</span></h2>
+    <div class="sec-head">
+      <span class="eyebrow"><span class="de">Module</span><span class="en">Modules</span></span>
+      <h2><span class="de">Was der Agent für dich übernimmt</span><span class="en">What the agent takes off your plate</span></h2>
+    </div>
 
     <div class="mod-grid">
       <div class="mod">
@@ -391,14 +414,16 @@
 </section>
 
 <!-- ================= DEAL SCORE FEATURE ================= -->
-<section class="feature">
+<section class="light alt">
   <div class="wrap">
-    <span class="eyebrow"><span class="de">Modul 07 · Der wichtigste Teil</span><span class="en">Module 07 · The most important part</span></span>
-    <h2><span class="de">Der Deal Score</span><span class="en">The Deal Score</span></h2>
-    <p style="max-width:40rem;margin-top:1.4rem">
-      <span class="de">Jedes Objekt erhält Punkte über alle Module hinweg. Am Ende steht keine Zahlenkolonne, sondern ein Urteil — kaufen oder nicht kaufen, mit Begründung.</span>
-      <span class="en">Every property is scored across all modules. The result isn't a wall of numbers but a verdict — buy or don't buy, with reasons.</span>
-    </p>
+    <div class="sec-head">
+      <span class="eyebrow"><span class="de">Modul 07 · Der wichtigste Teil</span><span class="en">Module 07 · The most important part</span></span>
+      <h2><span class="de">Der Deal Score</span><span class="en">The Deal Score</span></h2>
+      <p>
+        <span class="de">Jedes Objekt erhält Punkte über alle Module hinweg. Am Ende steht keine Zahlenkolonne, sondern ein Urteil — kaufen oder nicht kaufen, mit Begründung.</span>
+        <span class="en">Every property is scored across all modules. The result isn't a wall of numbers but a verdict — buy or don't buy, with reasons.</span>
+      </p>
+    </div>
 
     <div class="compare">
       <div class="score-card">
@@ -418,7 +443,7 @@
 
       <div class="score-card no">
         <div class="score-head">
-          <span class="verdict"><span class="dot dot-no"></span><span class="de">Nicht kaufen</span><span class="en">Don't buy</span></span>
+          <span class="verdict no"><span class="dot dot-no"></span><span class="de">Nicht kaufen</span><span class="en">Don't buy</span></span>
           <span class="score-num">31<small>/100</small></span>
         </div>
         <ul class="score-list">
@@ -439,17 +464,17 @@
   </div>
 </section>
 
-<!-- ================= WAITLIST ================= -->
+<!-- ================= WAITLIST (dark bookend) ================= -->
 <section class="waitlist" id="waitlist">
   <div class="wrap">
-    <span class="eyebrow" style="color:#8d897b"><span class="de">Warteliste</span><span class="en">Waitlist</span></span>
+    <span class="eyebrow"><span class="de">Warteliste</span><span class="en">Waitlist</span></span>
     <h2><span class="de">Sei dabei, bevor die guten Deals weg sind.</span><span class="en">Get in before the good deals are gone.</span></h2>
     <p><span class="de">Wir öffnen den Zugang schrittweise. Trag dich ein und erhalte als Erste:r deine persönliche Deal-Analyse.</span><span class="en">We're opening access gradually. Sign up and be among the first to receive your personal deal analysis.</span></p>
 
     <!-- TODO: wire this form to your email provider (e.g. Formspree, Mailchimp, Buttondown) -->
     <form class="wl-form" id="wlForm">
       <input type="email" required id="wlEmail" placeholder="deine@email.de" data-ph-de="deine@email.de" data-ph-en="your@email.com" aria-label="E-Mail">
-      <button type="submit" class="btn"><span class="de">Eintragen</span><span class="en">Join</span></button>
+      <button type="submit" class="btn btn-solid"><span class="de">Eintragen</span><span class="en">Join</span></button>
     </form>
     <p class="wl-note"><span class="de">Kein Spam. Nur die wichtigsten Updates zum Start.</span><span class="en">No spam. Only the updates that matter before launch.</span></p>
     <div class="wl-success" id="wlSuccess">
@@ -462,7 +487,7 @@
 <!-- ================= FOOTER ================= -->
 <footer>
   <div class="wrap foot">
-    <span>© 2026 <span class="brand-name" style="font-size:.85rem">Investment Scout</span> · <span class="de">Keine Steuer- oder Anlageberatung.</span><span class="en">Not tax or investment advice.</span></span>
+    <span>© 2026 <span class="brand-name" style="font-size:.85rem;color:var(--ink)">Investment Scout</span> · <span class="de">Keine Steuer- oder Anlageberatung.</span><span class="en">Not tax or investment advice.</span></span>
     <span>
       <a href="#"><span class="de">Impressum</span><span class="en">Legal notice</span></a>
       <a href="#"><span class="de">Datenschutz</span><span class="en">Privacy</span></a>
@@ -473,23 +498,22 @@
 
 <script>
   // ----- language toggle (DE default, persisted) -----
-  const html = document.documentElement;
+  const htmlEl = document.documentElement;
   const toggle = document.getElementById('langToggle');
   const email = document.getElementById('wlEmail');
 
   function setLang(lang){
-    html.setAttribute('data-lang', lang);
-    html.setAttribute('lang', lang);
+    htmlEl.setAttribute('data-lang', lang);
+    htmlEl.setAttribute('lang', lang);
     toggle.textContent = lang === 'de' ? 'EN' : 'DE';
     email.placeholder = lang === 'de' ? email.dataset.phDe : email.dataset.phEn;
     try{ localStorage.setItem('lang', lang); }catch(e){}
   }
   toggle.addEventListener('click', () => {
-    setLang(html.getAttribute('data-lang') === 'de' ? 'en' : 'de');
+    setLang(htmlEl.getAttribute('data-lang') === 'en' ? 'de' : 'en');
   });
   try{
-    const saved = localStorage.getItem('lang');
-    if(saved === 'en') setLang('en');
+    if(localStorage.getItem('lang') === 'en') setLang('en');
   }catch(e){}
 
   // ----- waitlist form (no backend yet — shows confirmation only) -----
