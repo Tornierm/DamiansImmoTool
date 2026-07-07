@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de" data-lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- BRAND: the product name appears only inside elements with class "brand-name" — swap it in one search/replace. -->
+<title>Investment Scout — Kaufen oder nicht kaufen. Klar entschieden.</title>
+<meta name="description" content="Ein KI-Agent, der Immobilien findet, analysiert und eine klare Kaufentscheidung mit Begründung liefert.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #FFFEF2;
+    --bg-alt:    #F5F3E7;
+    --ink:       #252420;
+    --muted:     #6E6A5E;
+    --line:      #DCD8C8;
+    --olive:     #3F5741; /* "Kaufen" accent */
+    --rust:      #9C4A38; /* "Nicht kaufen" accent */
+    --serif:     "Fraunces", Georgia, "Times New Roman", serif;
+    --sans:      "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- language toggle ---------- */
+  html[data-lang="de"] .en{display:none !important}
+  html[data-lang="en"] .de{display:none !important}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  section{border-top:1px solid var(--line)}
+
+  h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-0.01em}
+  h1{font-size:clamp(2.4rem,5vw,3.9rem);line-height:1.08}
+  h2{font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.2}
+  h3{font-size:1.25rem;line-height:1.3}
+  p{color:var(--muted)}
+
+  .eyebrow{
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--muted);margin-bottom:1.4rem;display:block;
+  }
+  .btn{
+    display:inline-block;font-family:var(--sans);font-size:.85rem;
+    letter-spacing:.06em;text-transform:uppercase;text-decoration:none;
+    padding:1rem 2rem;border:1px solid var(--ink);cursor:pointer;
+    transition:background .25s,color .25s;
+  }
+  .btn-solid{background:var(--ink);color:var(--bg)}
+  .btn-solid:hover{background:var(--olive);border-color:var(--olive)}
+  .btn-ghost{background:transparent;color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--bg)}
+
+  /* ---------- nav ---------- */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1.4rem 0;
+  }
+  .brand-name{
+    font-family:var(--serif);font-size:1.3rem;letter-spacing:-0.01em;
+    text-decoration:none;color:var(--ink);
+  }
+  .nav-links{display:flex;gap:2rem;align-items:center;list-style:none}
+  .nav-links a{
+    font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--muted);text-decoration:none;transition:color .2s;
+  }
+  .nav-links a:hover{color:var(--ink)}
+  .lang-toggle{
+    font-family:var(--sans);font-size:.78rem;letter-spacing:.12em;
+    background:none;border:1px solid var(--line);color:var(--muted);
+    padding:.45rem .9rem;cursor:pointer;transition:all .2s;
+  }
+  .lang-toggle:hover{border-color:var(--ink);color:var(--ink)}
+  @media(max-width:760px){.nav-links li.hide-m{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{border-top:1px solid var(--line);padding:5.5rem 0 6rem}
+  .hero-grid{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:4rem;align-items:center;
+  }
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:3.5rem}}
+  .hero p.lede{font-size:1.08rem;max-width:34rem;margin:1.8rem 0 2.6rem}
+  .hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+
+  /* ---------- deal score card ---------- */
+  .score-card{
+    border:1px solid var(--ink);background:var(--bg);
+    padding:2rem 2rem 1.6rem;max-width:26rem;margin-left:auto;
+  }
+  @media(max-width:900px){.score-card{margin-left:0}}
+  .score-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    border-bottom:1px solid var(--line);padding-bottom:1.2rem;margin-bottom:1.2rem;
+  }
+  .verdict{display:flex;align-items:center;gap:.6rem;font-family:var(--serif);font-size:1.3rem}
+  .dot{width:.55rem;height:.55rem;border-radius:50%;display:inline-block}
+  .dot-buy{background:var(--olive)}
+  .dot-no{background:var(--rust)}
+  .score-num{font-family:var(--serif);font-size:2.2rem;color:var(--olive)}
+  .score-num small{font-size:1rem;color:var(--muted)}
+  .score-list{list-style:none}
+  .score-list li{
+    display:flex;justify-content:space-between;gap:1rem;
+    font-size:.86rem;padding:.5rem 0;border-bottom:1px solid var(--line);
+    color:var(--ink);
+  }
+  .score-list li:last-child{border-bottom:none}
+  .score-list .val{color:var(--olive);white-space:nowrap}
+  .score-list .val.neg{color:var(--rust)}
+  .card-caption{
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;
+    color:var(--muted);margin-top:1.1rem;
+  }
+
+  /* ---------- statement ---------- */
+  .statement{padding:6rem 0;background:var(--bg-alt)}
+  .statement h2{max-width:46rem}
+  .statement p{max-width:40rem;margin-top:1.6rem}
+
+  /* ---------- how it works ---------- */
+  .how{padding:5.5rem 0 6rem}
+  .steps{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);margin-top:3.5rem;
+  }
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--bg);padding:2.4rem 2rem 2.8rem}
+  .step-num{
+    font-family:var(--serif);font-size:.95rem;color:var(--muted);
+    display:block;margin-bottom:1.6rem;
+  }
+  .step h3{margin-bottom:.9rem}
+  .step p{font-size:.92rem}
+
+  /* ---------- modules ---------- */
+  .modules{padding:5.5rem 0 6rem;background:var(--bg-alt)}
+  .mod-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);margin-top:3.5rem;
+  }
+  @media(max-width:900px){.mod-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.mod-grid{grid-template-columns:1fr}}
+  .mod{background:var(--bg);padding:2.2rem 1.9rem 2.5rem}
+  .mod-num{
+    font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-bottom:1.4rem;
+  }
+  .mod h3{margin-bottom:.8rem}
+  .mod p{font-size:.9rem;margin-bottom:1.1rem}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem}
+  .tag{
+    font-size:.72rem;color:var(--muted);border:1px solid var(--line);
+    padding:.2rem .6rem;white-space:nowrap;
+  }
+
+  /* ---------- deal score feature ---------- */
+  .feature{padding:5.5rem 0 6rem}
+  .compare{
+    display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3.5rem;
+  }
+  @media(max-width:820px){.compare{grid-template-columns:1fr}}
+  .compare .score-card{max-width:none;margin:0}
+  .score-card.no .score-head .score-num{color:var(--rust)}
+
+  /* ---------- screenshot placeholder ---------- */
+  .placeholder{
+    border:1px dashed var(--muted);display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;
+    text-align:center;padding:1rem;
+  }
+  .shot{margin-top:4rem;height:420px}
+  @media(max-width:820px){.shot{height:260px}}
+
+  /* ---------- waitlist ---------- */
+  .waitlist{padding:6rem 0;background:var(--ink);color:var(--bg);border-top:none}
+  .waitlist h2{color:var(--bg);max-width:36rem}
+  .waitlist p{color:#B9B5A6;max-width:34rem;margin-top:1.4rem}
+  .wl-form{display:flex;gap:.8rem;margin-top:2.6rem;max-width:34rem;flex-wrap:wrap}
+  .wl-form input{
+    flex:1;min-width:220px;background:transparent;border:1px solid #5b584d;
+    color:var(--bg);padding:1rem 1.2rem;font-size:.95rem;font-family:var(--sans);
+  }
+  .wl-form input::placeholder{color:#8d897b}
+  .wl-form input:focus{outline:none;border-color:var(--bg)}
+  .wl-form .btn{border-color:var(--bg);background:var(--bg);color:var(--ink)}
+  .wl-form .btn:hover{background:var(--olive);border-color:var(--olive);color:var(--bg)}
+  .wl-note{font-size:.78rem;color:#8d897b;margin-top:1.1rem}
+  .wl-success{
+    display:none;margin-top:2.6rem;border:1px solid var(--olive);
+    padding:1.2rem 1.5rem;color:var(--bg);font-size:.95rem;
+  }
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:2.2rem 0;font-size:.78rem;color:var(--muted)}
+  .foot{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+  .foot a{color:var(--muted);text-decoration:none;margin-left:1.4rem}
+  .foot a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <nav>
+    <a href="#" class="brand-name">Investment Scout</a>
+    <ul class="nav-links">
+      <li class="hide-m"><a href="#how"><span class="de">So funktioniert's</span><span class="en">How it works</span></a></li>
+      <li class="hide-m"><a href="#modules"><span class="de">Module</span><span class="en">Modules</span></a></li>
+      <li class="hide-m"><a href="#waitlist"><span class="de">Warteliste</span><span class="en">Waitlist</span></a></li>
+      <li><button class="lang-toggle" id="langToggle" aria-label="Sprache wechseln / switch language">EN</button></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="de">KI-Agent für Immobilien-Investments</span><span class="en">AI agent for real-estate investing</span></span>
+      <h1>
+        <span class="de">Kaufen oder nicht kaufen.<br>Mehr musst du nicht lesen.</span>
+        <span class="en">Buy or don't buy.<br>That's all you need to read.</span>
+      </h1>
+      <p class="lede">
+        <span class="de">Der Agent durchsucht täglich den Markt, bewertet Standort, Zahlen, Steuern und Dokumente — und beantwortet die einzige Frage, die zählt: Würdest du dieses Objekt unter deinen Kriterien kaufen?</span>
+        <span class="en">The agent scans the market daily, evaluates location, numbers, taxes and documents — and answers the only question that matters: would you buy this property under your own criteria?</span>
+      </p>
+      <div class="hero-ctas">
+        <a href="#waitlist" class="btn btn-solid"><span class="de">Frühen Zugang sichern</span><span class="en">Get early access</span></a>
+        <a href="#how" class="btn btn-ghost"><span class="de">So funktioniert's</span><span class="en">How it works</span></a>
+      </div>
+    </div>
+
+    <!-- live deal-score card -->
+    <div class="score-card">
+      <div class="score-head">
+        <span class="verdict"><span class="dot dot-buy"></span><span class="de">Kaufen</span><span class="en">Buy</span></span>
+        <span class="score-num">94<small>/100</small></span>
+      </div>
+      <ul class="score-list">
+        <li><span class="de">Cashflow</span><span class="en">Cash flow</span><span class="val">+143&nbsp;€/Monat</span></li>
+        <li><span class="de">Kaufpreis vs. Marktwert</span><span class="en">Price vs. market value</span><span class="val">−11&nbsp;%</span></li>
+        <li><span class="de">Bevölkerungswachstum</span><span class="en">Population growth</span><span class="val"><span class="de">positiv</span><span class="en">positive</span></span></li>
+        <li><span class="de">Mikrolage</span><span class="en">Micro-location</span><span class="val"><span class="de">Universitätsstadt</span><span class="en">University town</span></span></li>
+        <li><span class="de">Finanzierungschance</span><span class="en">Financing odds</span><span class="val"><span class="de">hoch</span><span class="en">high</span></span></li>
+        <li><span class="de">Steuerliche Abschreibung</span><span class="en">Tax depreciation</span><span class="val"><span class="de">gut</span><span class="en">strong</span></span></li>
+        <li><span class="de">Risiko</span><span class="en">Risk</span><span class="val"><span class="de">niedrig</span><span class="en">low</span></span></li>
+      </ul>
+      <div class="card-caption"><span class="de">Beispielanalyse · 3-Zimmer-ETW · automatisch erstellt</span><span class="en">Sample analysis · 3-room condo · generated automatically</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATEMENT ================= -->
+<section class="statement">
+  <div class="wrap">
+    <span class="eyebrow"><span class="de">Warum</span><span class="en">Why</span></span>
+    <h2>
+      <span class="de">Keine langen Exposés mehr. Eine klare Entscheidung mit Begründung.</span>
+      <span class="en">No more endless exposés. One clear decision, with reasons.</span>
+    </h2>
+    <p>
+      <span class="de">Gute Deals scheitern selten an fehlenden Angeboten — sie scheitern an der Zeit, jedes Angebot sauber durchzurechnen. Der Agent übernimmt genau das: jeden Tag, für jedes Objekt, nach deinen persönlichen Kriterien.</span>
+      <span class="en">Good deals rarely fail for lack of listings — they fail for lack of time to properly analyse each one. The agent does exactly that: every day, for every property, against your personal criteria.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="how" id="how">
+  <div class="wrap">
+    <span class="eyebrow"><span class="de">So funktioniert's</span><span class="en">How it works</span></span>
+    <h2><span class="de">Drei Schritte zur Entscheidung</span><span class="en">Three steps to a decision</span></h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">01</span>
+        <h3><span class="de">Kriterien festlegen</span><span class="en">Set your criteria</span></h3>
+        <p><span class="de">Eigenkapital, Zielrendite, Regionen, Risikoprofil, Steuersituation. Einmal einrichten — der Agent kennt ab jetzt deine Definition eines guten Deals.</span><span class="en">Equity, target yield, regions, risk profile, tax situation. Set it up once — from then on the agent knows your definition of a good deal.</span></p>
+      </div>
+      <div class="step">
+        <span class="step-num">02</span>
+        <h3><span class="de">Der Agent arbeitet</span><span class="en">The agent works</span></h3>
+        <p><span class="de">Täglich durchsucht er den Markt, bewertet jeden Standort, rechnet Rendite, Cashflow, Steuer und Finanzierung durch und liest die Unterlagen.</span><span class="en">It scans the market daily, scores every location, runs yield, cash flow, tax and financing numbers, and reads the documents.</span></p>
+      </div>
+      <div class="step">
+        <span class="step-num">03</span>
+        <h3><span class="de">Entscheidung erhalten</span><span class="en">Receive the decision</span></h3>
+        <p><span class="de">Kaufen oder nicht kaufen — mit Deal Score und nachvollziehbarer Begründung. Du prüfst nur noch die besten Objekte selbst.</span><span class="en">Buy or don't buy — with a deal score and a transparent rationale. You only review the best properties yourself.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODULES ================= -->
+<section class="modules" id="modules">
+  <div class="wrap">
+    <span class="eyebrow"><span class="de">Module</span><span class="en">Modules</span></span>
+    <h2><span class="de">Was der Agent für dich übernimmt</span><span class="en">What the agent takes off your plate</span></h2>
+
+    <div class="mod-grid">
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 01</span><span class="en">Module 01</span></span>
+        <h3><span class="de">Immobiliensuche</span><span class="en">Property search</span></h3>
+        <p><span class="de">Tägliche Suche über alle relevanten Objektarten hinweg — bevor andere sie sehen.</span><span class="en">Daily search across all relevant property types — before others see them.</span></p>
+        <div class="tags">
+          <span class="tag"><span class="de">Eigentumswohnungen</span><span class="en">Condos</span></span>
+          <span class="tag"><span class="de">Mehrfamilienhäuser</span><span class="en">Multi-family</span></span>
+          <span class="tag"><span class="de">Neubau</span><span class="en">New builds</span></span>
+          <span class="tag">Forward Deals</span>
+          <span class="tag">Off-Market</span>
+          <span class="tag"><span class="de">Zwangsversteigerungen</span><span class="en">Foreclosures</span></span>
+        </div>
+      </div>
+
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 02</span><span class="en">Module 02</span></span>
+        <h3><span class="de">Standortbewertung</span><span class="en">Location scoring</span></h3>
+        <p><span class="de">Jeder Ort erhält einen Zukunfts-Score aus Wirtschaft, Demografie, Markt und Infrastruktur.</span><span class="en">Every location gets a future score built from economy, demographics, market and infrastructure.</span></p>
+        <div class="tags">
+          <span class="tag"><span class="de">Kaufkraft</span><span class="en">Purchasing power</span></span>
+          <span class="tag"><span class="de">Bevölkerungsentwicklung</span><span class="en">Population trend</span></span>
+          <span class="tag"><span class="de">Mietsteigerung</span><span class="en">Rent growth</span></span>
+          <span class="tag"><span class="de">Leerstand</span><span class="en">Vacancy</span></span>
+          <span class="tag"><span class="de">Infrastruktur</span><span class="en">Infrastructure</span></span>
+        </div>
+      </div>
+
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 03</span><span class="en">Module 03</span></span>
+        <h3><span class="de">Objektanalyse</span><span class="en">Property analysis</span></h3>
+        <p><span class="de">Alle Kennzahlen automatisch berechnet — vom Kaufpreisfaktor bis zum Zinsänderungsrisiko.</span><span class="en">Every metric computed automatically — from price multiple to interest-rate risk.</span></p>
+        <div class="tags">
+          <span class="tag"><span class="de">Kaufpreisfaktor</span><span class="en">Price multiple</span></span>
+          <span class="tag"><span class="de">Brutto-/Nettorendite</span><span class="en">Gross/net yield</span></span>
+          <span class="tag">Cashflow</span>
+          <span class="tag"><span class="de">Eigenkapitalrendite</span><span class="en">Return on equity</span></span>
+          <span class="tag"><span class="de">Marktwert</span><span class="en">Market value</span></span>
+          <span class="tag"><span class="de">Mietpotenzial</span><span class="en">Rent potential</span></span>
+        </div>
+      </div>
+
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 04</span><span class="en">Module 04</span></span>
+        <h3><span class="de">Steuer</span><span class="en">Tax</span></h3>
+        <p><span class="de">Hier wird der Agent richtig stark: die steuerliche Wirkung jedes Objekts, automatisch.</span><span class="en">Where the agent shines: the tax impact of every property, automatically.</span></p>
+        <div class="tags">
+          <span class="tag"><span class="de">Lineare AfA</span><span class="en">Straight-line depreciation</span></span>
+          <span class="tag"><span class="de">Sonderabschreibungen</span><span class="en">Special depreciation</span></span>
+          <span class="tag"><span class="de">Werbungskosten</span><span class="en">Deductible costs</span></span>
+          <span class="tag"><span class="de">Liquidität nach Steuern</span><span class="en">After-tax liquidity</span></span>
+          <span class="tag"><span class="de">Verkaufsszenarien</span><span class="en">Exit scenarios</span></span>
+        </div>
+      </div>
+
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 05</span><span class="en">Module 05</span></span>
+        <h3><span class="de">Dokumentenanalyse</span><span class="en">Document analysis</span></h3>
+        <p><span class="de">Die KI liest die Unterlagen und fasst zusammen, was du wissen musst.</span><span class="en">The AI reads the paperwork and summarises what you need to know.</span></p>
+        <div class="tags">
+          <span class="tag">Exposé</span>
+          <span class="tag"><span class="de">Energieausweis</span><span class="en">Energy certificate</span></span>
+          <span class="tag"><span class="de">Mietliste</span><span class="en">Rent roll</span></span>
+          <span class="tag"><span class="de">Teilungserklärung</span><span class="en">Declaration of division</span></span>
+          <span class="tag"><span class="de">WEG-Protokolle</span><span class="en">HOA minutes</span></span>
+          <span class="tag"><span class="de">Grundbuch</span><span class="en">Land register</span></span>
+        </div>
+      </div>
+
+      <div class="mod">
+        <span class="mod-num"><span class="de">Modul 06</span><span class="en">Module 06</span></span>
+        <h3><span class="de">Finanzierung</span><span class="en">Financing</span></h3>
+        <p><span class="de">Der Agent kennt deine Zahlen und schätzt: Wie wahrscheinlich finanziert eine Bank dieses Objekt?</span><span class="en">The agent knows your numbers and estimates: how likely will a bank finance this property?</span></p>
+        <div class="tags">
+          <span class="tag"><span class="de">Einkommen</span><span class="en">Income</span></span>
+          <span class="tag"><span class="de">Eigenkapital</span><span class="en">Equity</span></span>
+          <span class="tag"><span class="de">Zins &amp; Tilgung</span><span class="en">Interest &amp; repayment</span></span>
+          <span class="tag"><span class="de">Kapitaldienst</span><span class="en">Debt service</span></span>
+          <span class="tag"><span class="de">Finanzierungswahrscheinlichkeit</span><span class="en">Financing probability</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DEAL SCORE FEATURE ================= -->
+<section class="feature">
+  <div class="wrap">
+    <span class="eyebrow"><span class="de">Modul 07 · Der wichtigste Teil</span><span class="en">Module 07 · The most important part</span></span>
+    <h2><span class="de">Der Deal Score</span><span class="en">The Deal Score</span></h2>
+    <p style="max-width:40rem;margin-top:1.4rem">
+      <span class="de">Jedes Objekt erhält Punkte über alle Module hinweg. Am Ende steht keine Zahlenkolonne, sondern ein Urteil — kaufen oder nicht kaufen, mit Begründung.</span>
+      <span class="en">Every property is scored across all modules. The result isn't a wall of numbers but a verdict — buy or don't buy, with reasons.</span>
+    </p>
+
+    <div class="compare">
+      <div class="score-card">
+        <div class="score-head">
+          <span class="verdict"><span class="dot dot-buy"></span><span class="de">Kaufen</span><span class="en">Buy</span></span>
+          <span class="score-num">94<small>/100</small></span>
+        </div>
+        <ul class="score-list">
+          <li><span class="de">Positiver Cashflow</span><span class="en">Positive cash flow</span><span class="val">+143&nbsp;€/Monat</span></li>
+          <li><span class="de">Kaufpreis unter Marktwert</span><span class="en">Price below market value</span><span class="val">−11&nbsp;%</span></li>
+          <li><span class="de">Bevölkerungswachstum</span><span class="en">Population growth</span><span class="val"><span class="de">positiv</span><span class="en">positive</span></span></li>
+          <li><span class="de">Gute Finanzierungschancen</span><span class="en">Good financing odds</span><span class="val">✓</span></li>
+          <li><span class="de">Gute steuerliche Abschreibung</span><span class="en">Strong tax depreciation</span><span class="val">✓</span></li>
+          <li><span class="de">Niedriges Risiko</span><span class="en">Low risk</span><span class="val">✓</span></li>
+        </ul>
+      </div>
+
+      <div class="score-card no">
+        <div class="score-head">
+          <span class="verdict"><span class="dot dot-no"></span><span class="de">Nicht kaufen</span><span class="en">Don't buy</span></span>
+          <span class="score-num">31<small>/100</small></span>
+        </div>
+        <ul class="score-list">
+          <li><span class="de">Kaufpreisfaktor zu hoch</span><span class="en">Price multiple too high</span><span class="val neg">✕</span></li>
+          <li><span class="de">Negativer Cashflow</span><span class="en">Negative cash flow</span><span class="val neg">−212&nbsp;€/Monat</span></li>
+          <li><span class="de">Schrumpfende Bevölkerung</span><span class="en">Shrinking population</span><span class="val neg">✕</span></li>
+          <li><span class="de">Schwache Mikrolage</span><span class="en">Weak micro-location</span><span class="val neg">✕</span></li>
+          <li><span class="de">Hohes Zinsänderungsrisiko</span><span class="en">High interest-rate risk</span><span class="val neg">✕</span></li>
+          <li><span class="de">Instandhaltungsstau laut WEG-Protokoll</span><span class="en">Maintenance backlog per HOA minutes</span><span class="val neg">✕</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- image placeholder: replace with a real product screenshot -->
+    <div class="placeholder shot">
+      <span><span class="de">Platzhalter — App-Screenshot / Dashboard</span><span class="en">Placeholder — app screenshot / dashboard</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WAITLIST ================= -->
+<section class="waitlist" id="waitlist">
+  <div class="wrap">
+    <span class="eyebrow" style="color:#8d897b"><span class="de">Warteliste</span><span class="en">Waitlist</span></span>
+    <h2><span class="de">Sei dabei, bevor die guten Deals weg sind.</span><span class="en">Get in before the good deals are gone.</span></h2>
+    <p><span class="de">Wir öffnen den Zugang schrittweise. Trag dich ein und erhalte als Erste:r deine persönliche Deal-Analyse.</span><span class="en">We're opening access gradually. Sign up and be among the first to receive your personal deal analysis.</span></p>
+
+    <!-- TODO: wire this form to your email provider (e.g. Formspree, Mailchimp, Buttondown) -->
+    <form class="wl-form" id="wlForm">
+      <input type="email" required id="wlEmail" placeholder="deine@email.de" data-ph-de="deine@email.de" data-ph-en="your@email.com" aria-label="E-Mail">
+      <button type="submit" class="btn"><span class="de">Eintragen</span><span class="en">Join</span></button>
+    </form>
+    <p class="wl-note"><span class="de">Kein Spam. Nur die wichtigsten Updates zum Start.</span><span class="en">No spam. Only the updates that matter before launch.</span></p>
+    <div class="wl-success" id="wlSuccess">
+      <span class="de">Danke! Du stehst auf der Liste — wir melden uns, sobald es losgeht.</span>
+      <span class="en">Thank you! You're on the list — we'll be in touch as soon as we launch.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 <span class="brand-name" style="font-size:.85rem">Investment Scout</span> · <span class="de">Keine Steuer- oder Anlageberatung.</span><span class="en">Not tax or investment advice.</span></span>
+    <span>
+      <a href="#"><span class="de">Impressum</span><span class="en">Legal notice</span></a>
+      <a href="#"><span class="de">Datenschutz</span><span class="en">Privacy</span></a>
+      <a href="#"><span class="de">Kontakt</span><span class="en">Contact</span></a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  // ----- language toggle (DE default, persisted) -----
+  const html = document.documentElement;
+  const toggle = document.getElementById('langToggle');
+  const email = document.getElementById('wlEmail');
+
+  function setLang(lang){
+    html.setAttribute('data-lang', lang);
+    html.setAttribute('lang', lang);
+    toggle.textContent = lang === 'de' ? 'EN' : 'DE';
+    email.placeholder = lang === 'de' ? email.dataset.phDe : email.dataset.phEn;
+    try{ localStorage.setItem('lang', lang); }catch(e){}
+  }
+  toggle.addEventListener('click', () => {
+    setLang(html.getAttribute('data-lang') === 'de' ? 'en' : 'de');
+  });
+  try{
+    const saved = localStorage.getItem('lang');
+    if(saved === 'en') setLang('en');
+  }catch(e){}
+
+  // ----- waitlist form (no backend yet — shows confirmation only) -----
+  document.getElementById('wlForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    document.getElementById('wlForm').style.display = 'none';
+    document.getElementById('wlSuccess').style.display = 'block';
+  });
+</script>
+
+</body>
+</html>
